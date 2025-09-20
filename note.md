@@ -341,8 +341,65 @@ template<class T>
 这是什么，怎么使用？
 随便写一个函数：
 ```c
-void swap(int a, int b)
+#include<iostream>
+using namespace std;
+void my_swap(int& i, int& j)
 {
-    
+	int num = i;
+	i = j;
+	j = num;
+}
+void my_swap(double& i, double& j)
+{
+	double num = i;
+	i = j;
+	j = num;
+}
+int main()
+{
+	int a = 3, b = 8;
+	double x = 3.14, y = 16.28;
+	cout << "交换前：" << " a = " << a << " b = " << b << endl;
+	cout << "交换前：" << " x = " << x << " y = " << y << endl;
+	my_swap(a, b);
+	my_swap(x, y);
+	cout << "交换后：" << " a = " << a << " b = " << b << endl;
+	cout << "交换后：" << " x = " << x << " y = " << y << endl;
 }
 ```
+虽然这里用到了代码的重载，可以复用一个函数名。但是在函数体部分，差不多的内容却还要复写。
+
+我们可以用template修饰此函数：
+```c
+#include<iostream>
+using namespace std;
+template<class T>
+void my_swap(T& i, T& j)
+{
+	T num = i;
+	i = j;
+	j = num;
+}
+
+int main()
+{
+	int a = 3, b = 8;
+	double x = 3.14, y = 16.28;
+	cout << "交换前：" << " a = " << a << " b = " << b << endl;
+	cout << "交换前：" << " x = " << x << " y = " << y << endl;
+	my_swap(a, b);
+	my_swap(x, y);
+	cout << "交换后：" << " a = " << a << " b = " << b << endl;
+	cout << "交换后：" << " x = " << x << " y = " << y << endl;
+}
+```
+很简单，用元变量，也就是标识符T，替换函数中的类型。
+调用的时候就像是对编译器说，“嘿，我传入了一个int类型！”
+然后T就会替换成int类型。
+
+以每当编译器 看到一个函数签名 正好能与元变量T对应起来时 就会为那个元变量生成并编译代码 所以需要需要注意一件事情 即是你可能会遇到代码膨胀 也可能 写了几次swap就会生成几种不同的代码 但是它又是必须的 因为你总是需要那些代码的 这是一种将原先你必须亲自完成的工作自动化的过程 这种自动化的过程非常强大 人们也希望这种过程能够大幅减少错误。
+
+如果其中有某些类型如此生成的函数会出现bug怎么办呢？
+可以单独写一个，针对此类型的函数，因为有重载的机制，仍然可以用同名函数。编译器在匹配函数时优先考虑确定类型的，其次才会考虑模板类型函数。
+
+使用泛型的关键是搞清楚它的使用范围。比如你不能用烹饪肉的食谱去烹饪蔬菜。交换函数可能可以不限类型，但是，两个数相加的函数，你不能传一些没有加法定义的类型。
